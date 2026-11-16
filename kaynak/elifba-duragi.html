@@ -1,0 +1,484 @@
+<title>Elifba Durağı</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&family=Scheherazade+New:wght@400;700&display=swap">
+<style>
+/* Layout: tek sütun, telefon öncelikli. Ana ekran yukarıdan aşağı inen bir "durak yolu";
+   ders ekranı tek büyük çini kart + altında iri cevap düğmeleri. Renkler İznik çinisinden:
+   turkuaz zemin, kobalt ikinci renk, mercan kırmızısı yalnızca yanlış cevapta, sarı yıldız. */
+:root{
+  --bg:#F2F7F6; --surface:#FFFFFF; --ink:#13302F; --muted:#56716F; --line:#D4E4E1;
+  --tile:#0B7A77; --tile-ink:#FFFFFF; --tile-soft:#DCEFEC;
+  --cobalt:#1F4C9E; --cobalt-soft:#E2E9F6;
+  --sun:#F2B705; --sun-ink:#4D3900; --sun-soft:#FDF1C9;
+  --good:#1D8A4C; --good-soft:#DDF2E4; --bad:#C2412C; --bad-soft:#FAE3DD;
+  --press:#BFD6D2; --locked:#E6EEED;
+  --f-ui:"Baloo 2","Nunito",system-ui,sans-serif;
+  --f-body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-ar:"Scheherazade New","Amiri","Noto Naskh Arabic","Geeza Pro","Traditional Arabic",serif;
+  --r:22px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1C1C; --surface:#152A2A; --ink:#E4F1EF; --muted:#9AB4B1; --line:#284341;
+  --tile:#2AB0AA; --tile-ink:#04201F; --tile-soft:#163D3B;
+  --cobalt:#93B3F2; --cobalt-soft:#1B2B47;
+  --sun:#F4C534; --sun-ink:#2B2000; --sun-soft:#3A3113;
+  --good:#5FCC8C; --good-soft:#17392A; --bad:#F2896F; --bad-soft:#40241E;
+  --press:#0A1616; --locked:#1B302F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1C1C; --surface:#152A2A; --ink:#E4F1EF; --muted:#9AB4B1; --line:#284341;
+  --tile:#2AB0AA; --tile-ink:#04201F; --tile-soft:#163D3B;
+  --cobalt:#93B3F2; --cobalt-soft:#1B2B47;
+  --sun:#F4C534; --sun-ink:#2B2000; --sun-soft:#3A3113;
+  --good:#5FCC8C; --good-soft:#17392A; --bad:#F2896F; --bad-soft:#40241E;
+  --press:#0A1616; --locked:#1B302F; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;
+  -webkit-tap-highlight-color:transparent}
+.app{max-width:560px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 28px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--cobalt);outline-offset:3px}
+.ar{font-family:var(--f-ar);direction:rtl;unicode-bidi:isolate;line-height:1.6}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);
+  display:flex;align-items:center;gap:10px;padding-block:12px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.mark{width:44px;height:44px;border-radius:14px;background:var(--tile);color:var(--tile-ink);display:grid;place-items:center;flex:none}
+.mark span{font-family:var(--f-ar);font-size:30px;line-height:1;margin-top:6px}
+.brand h1{font-family:var(--f-ui);font-weight:800;font-size:22px;line-height:1;margin:0}
+.brand small{display:block;font-weight:700;font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.pill{display:flex;align-items:center;gap:6px;padding:6px 12px 6px 8px;border-radius:999px;background:var(--sun-soft);color:var(--sun-ink);
+  font-family:var(--f-ui);font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}
+.pill svg{width:22px;height:22px;color:var(--sun)}
+.icon-btn{width:48px;height:48px;border-radius:50%;border:0;background:var(--surface);box-shadow:0 3px 0 var(--press);display:grid;place-items:center;flex:none}
+.icon-btn svg{width:24px;height:24px}
+.icon-btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--press)}
+
+/* home: path */
+.hello{font-family:var(--f-ui);font-weight:700;font-size:20px;margin:6px 0 2px}
+.hello-sub{color:var(--muted);margin:0 0 14px}
+.path{list-style:none;margin:0;padding:8px 0 0;display:flex;flex-direction:column;gap:6px;position:relative}
+.stop{display:flex;align-items:center;gap:14px;position:relative}
+.stop:nth-child(4n+2){padding-left:44px}.stop:nth-child(4n+3){padding-left:72px}.stop:nth-child(4n+4){padding-left:44px}
+.node{width:76px;height:76px;flex:none;border-radius:50%;border:0;background:var(--tile);color:var(--tile-ink);
+  box-shadow:0 6px 0 color-mix(in srgb,var(--tile) 55%,#000);display:grid;place-items:center;position:relative;transition:transform .12s ease-out}
+.node .ar{font-size:38px;line-height:1;margin-top:10px}
+.node:active{transform:translateY(4px);box-shadow:0 2px 0 color-mix(in srgb,var(--tile) 55%,#000)}
+.stop.locked .node{background:var(--locked);color:var(--muted);box-shadow:0 6px 0 var(--press);cursor:not-allowed}
+.stop.done .node{background:var(--cobalt);color:var(--surface);box-shadow:0 6px 0 color-mix(in srgb,var(--cobalt) 55%,#000)}
+.stop.next .node::after{content:"";position:absolute;inset:-8px;border-radius:50%;border:3px dashed var(--tile);animation:spin 14s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lock{position:absolute;right:-2px;bottom:-2px;width:28px;height:28px;border-radius:50%;background:var(--surface);color:var(--muted);display:grid;place-items:center;box-shadow:0 2px 0 var(--press)}
+.lock svg{width:16px;height:16px}
+.stop-txt{min-width:0}
+.stop-txt b{display:block;font-family:var(--f-ui);font-weight:700;font-size:19px;line-height:1.15}
+.stop-txt span{display:block;color:var(--muted);font-size:14px}
+.stars{display:flex;gap:2px;margin-top:3px}
+.stars svg{width:18px;height:18px;color:var(--line)}
+.stars svg.on{color:var(--sun)}
+
+.note{margin-top:26px;background:var(--surface);border-radius:var(--r);border:2px solid var(--line)}
+.note summary{list-style:none;padding:14px 16px;font-family:var(--f-ui);font-weight:700;font-size:17px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.note summary::-webkit-details-marker{display:none}
+.note summary::after{content:"+";margin-left:auto;font-size:24px;color:var(--muted)}
+.note[open] summary::after{content:"–"}
+.note-body{padding:0 16px 16px;color:var(--ink);font-size:15px}
+.note-body p{margin:0 0 10px}
+.note-body ul{margin:0 0 12px;padding-left:20px}
+.note-body li{margin-bottom:6px}
+.tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--cobalt-soft);color:var(--cobalt)}
+.switch{display:flex;align-items:center;gap:10px;font-weight:700;margin-top:4px}
+.switch input{width:22px;height:22px;accent-color:var(--tile)}
+
+/* lesson */
+.lhead{display:flex;align-items:center;gap:10px;padding-block:12px}
+.lhead .ttl{flex:1;min-width:0}
+.lhead .ttl b{display:block;font-family:var(--f-ui);font-weight:800;font-size:20px;line-height:1.1}
+.lhead .ttl span{color:var(--muted);font-size:14px;font-weight:700}
+.bar{height:14px;border-radius:999px;background:var(--line);overflow:hidden;margin-bottom:14px}
+.bar i{display:block;height:100%;background:var(--tile);border-radius:999px;transition:width .3s ease-out}
+
+.tile{position:relative;background:var(--surface);border-radius:28px;padding:18px;border:3px solid var(--tile);
+  box-shadow:0 8px 0 color-mix(in srgb,var(--tile) 35%,transparent);text-align:center}
+.tile::before{content:"";position:absolute;inset:7px;border-radius:21px;border:2px dotted color-mix(in srgb,var(--tile) 45%,transparent);pointer-events:none}
+.glyph{font-family:var(--f-ar);font-size:clamp(120px,40vw,170px);line-height:1.35;color:var(--ink);direction:rtl;margin:0}
+.flip-hint{color:var(--muted);font-weight:700;font-size:14px}
+.cname{font-family:var(--f-ui);font-weight:800;font-size:40px;line-height:1;margin:2px 0 4px}
+.badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.badge{font-size:13px;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--tile-soft);color:var(--tile)}
+.badge.kalin{background:var(--cobalt-soft);color:var(--cobalt)}
+.forms{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;direction:rtl;margin:6px 0 12px}
+.forms div{background:var(--tile-soft);border-radius:16px;padding:4px 2px 8px;direction:ltr}
+.forms .ar{display:block;font-size:44px;line-height:1.5;color:var(--ink)}
+.forms small{font-size:12px;font-weight:800;color:var(--muted)}
+.read{font-family:var(--f-ui);font-weight:800;font-size:30px;color:var(--tile)}
+.sib{display:flex;justify-content:center;gap:10px;direction:rtl;flex-wrap:wrap}
+.sib div{min-width:84px;background:var(--tile-soft);border-radius:18px;padding:2px 10px 10px;direction:ltr}
+.sib .ar{display:block;font-size:76px;line-height:1.45}
+.sib b{font-family:var(--f-ui);font-size:18px}
+.sib small{display:block;color:var(--muted);font-weight:700;font-size:12px}
+.syl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;direction:rtl;margin-top:6px}
+.syl button{border:0;border-radius:16px;background:var(--tile-soft);padding:0 2px 6px;direction:ltr;box-shadow:0 3px 0 var(--press)}
+.syl button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--press)}
+.syl .ar{display:block;font-size:42px;line-height:1.55}
+.syl small{font-family:var(--f-ui);font-weight:800;font-size:14px;color:var(--tile)}
+.intro-mark{font-family:var(--f-ar);font-size:110px;line-height:1.3;color:var(--tile)}
+.lead{font-size:18px;font-weight:700;margin:4px 0 8px}
+
+.row{display:flex;gap:10px;margin-top:18px}
+.btn{flex:1;min-height:58px;border:0;border-radius:18px;font-family:var(--f-ui);font-weight:800;font-size:19px;padding:8px 14px;
+  background:var(--surface);color:var(--ink);box-shadow:0 5px 0 var(--press);display:flex;align-items:center;justify-content:center;gap:8px}
+.btn svg{width:22px;height:22px}
+.btn.primary{background:var(--tile);color:var(--tile-ink);box-shadow:0 5px 0 color-mix(in srgb,var(--tile) 55%,#000)}
+.btn.sun{background:var(--sun);color:var(--sun-ink);box-shadow:0 5px 0 color-mix(in srgb,var(--sun) 60%,#000)}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--press)}
+.btn.primary:active{box-shadow:0 2px 0 color-mix(in srgb,var(--tile) 55%,#000)}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.speak{border:0;background:var(--cobalt-soft);color:var(--cobalt);border-radius:999px;min-height:48px;padding:6px 18px;font-weight:800;font-size:16px;display:inline-flex;align-items:center;gap:8px}
+.speak svg{width:22px;height:22px}
+
+/* quiz */
+.q-prompt{font-family:var(--f-ui);font-weight:700;font-size:21px;text-align:center;margin:2px 0 10px;text-wrap:balance}
+.q-card{min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.q-card .glyph{font-size:clamp(92px,28vw,124px);line-height:1.75}
+.q-name{font-family:var(--f-ui);font-weight:800;font-size:56px;line-height:1.1}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.opt{min-height:84px;border:3px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:0 5px 0 var(--press);
+  font-family:var(--f-ui);font-weight:800;font-size:28px;padding:4px;display:grid;place-items:center;transition:transform .1s ease-out}
+.opt .ar{font-size:62px;line-height:1.35}
+.opt:active{transform:translateY(3px);box-shadow:0 2px 0 var(--press)}
+.opt.ok{border-color:var(--good);background:var(--good-soft);color:var(--good)}
+.opt.no{border-color:var(--bad);background:var(--bad-soft);color:var(--bad);animation:shake .35s}
+.opt.ok .ar,.opt.no .ar{color:inherit}
+.opt:disabled{cursor:default}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.fb{min-height:34px;text-align:center;font-family:var(--f-ui);font-weight:800;font-size:22px;margin-top:12px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+
+/* result */
+.result{text-align:center;padding-top:30px}
+.big-stars{display:flex;justify-content:center;gap:10px;margin:10px 0 6px}
+.big-stars svg{width:72px;height:72px;color:var(--line)}
+.big-stars svg.on{color:var(--sun);animation:pop .5s cubic-bezier(.2,1.6,.4,1) both}
+.big-stars svg:nth-child(2){animation-delay:.15s;transform:translateY(-14px)}
+.big-stars svg:nth-child(3){animation-delay:.3s}
+@keyframes pop{from{transform:scale(0)}}
+.result h2{font-family:var(--f-ui);font-weight:800;font-size:34px;margin:6px 0 0}
+.result p{color:var(--muted);font-size:17px;margin:4px 0 0}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(520px,calc(100% - 32px));
+  background:var(--ink);color:var(--bg);border-radius:16px;padding:12px 16px;font-weight:700;font-size:15px;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+@media (max-width:360px){.stop:nth-child(4n+3){padding-left:52px}.opt .ar{font-size:52px}}
+</style>
+
+<div class="app" id="app"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div class="sr" id="live" aria-live="polite"></div>
+
+<script>
+/* ---------- içerik ---------- */
+// c: harf, n: Türkçe adı, k: kalın okunur, j: kendisinden sonra gelen harfe bitişir, t: okunuştaki ünsüz
+const LETTERS=[
+ ['ا','Elif',0,0,''],['ب','Be',0,1,'b'],['ت','Te',0,1,'t'],['ث','Se',0,1,'s'],['ج','Cim',0,1,'c'],['ح','Ha',1,1,'h'],['خ','Hı',1,1,'h'],
+ ['د','Dal',0,0,'d'],['ذ','Zel',0,0,'z'],['ر','Ra',0,0,'r'],['ز','Ze',0,0,'z'],['س','Sin',0,1,'s'],['ش','Şın',0,1,'ş'],['ص','Sad',1,1,'s'],
+ ['ض','Dad',1,1,'d'],['ط','Tı',1,1,'t'],['ظ','Zı',1,1,'z'],['ع','Ayn',1,1,'’'],['غ','Ğayn',1,1,'ğ'],['ف','Fe',0,1,'f'],['ق','Kaf',1,1,'k'],
+ ['ك','Kef',0,1,'k'],['ل','Lam',0,1,'l'],['م','Mim',0,1,'m'],['ن','Nun',0,1,'n'],['و','Vav',0,0,'v'],['ه','He',0,1,'h'],['ي','Ye',0,1,'y']
+].map(([c,n,k,j,t],i)=>({i,c,n,k:!!k,j:!!j,t}));
+const HAREKE=[{m:'َ',ad:'Üstün',ince:'e',kalin:'a',yer:'harfin üstüne'},{m:'ِ',ad:'Esre',ince:'i',kalin:'ı',yer:'harfin altına'},{m:'ُ',ad:'Ötre',ince:'ü',kalin:'u',yer:'harfin üstüne'}];
+function reading(L,h){ // Türkiye'deki elifba geleneği: ince harf e-i-ü, kalın harf a-ı-u; Ra üstün/ötrede kalın, esrede ince
+  const H=HAREKE[h];let v=L.k?H.kalin:H.ince;
+  if(L.c==='ر')v=h===1?'i':(h===0?'a':'u');
+  return L.t+v;
+}
+const T='ـ';
+function forms(L){return L.j?[L.c,L.c+T,T+L.c+T,T+L.c]:[L.c,L.c,T+L.c,T+L.c]}
+const FORM_AD=['Tek','Başta','Ortada','Sonda'];
+const SIBS=[['ب','ت','ث'],['ج','ح','خ'],['د','ذ'],['ر','ز'],['س','ش'],['ص','ض'],['ط','ظ'],['ع','غ'],['ف','ق']];
+const BYC=Object.fromEntries(LETTERS.map(l=>[l.c,l]));
+const dotsOf={'ب':1,'ت':2,'ث':3,'ج':1,'ح':0,'خ':1,'د':0,'ذ':1,'ر':0,'ز':1,'س':0,'ش':3,'ص':0,'ض':1,'ط':0,'ظ':1,'ع':0,'غ':1,'ف':1,'ق':2};
+function dotWhere(c){const n=dotsOf[c];if(!n)return 'noktasız';const below={'ب':1,'ج':1};return n+' nokta, '+(below[c]?'altında':(c==='ج'?'ortada':'üstünde'))}
+
+const LESSONS=[
+ {id:'h1',t:'Harfler 1',s:'Elif – Hı',type:'letters',set:[0,1,2,3,4,5,6]},
+ {id:'h2',t:'Harfler 2',s:'Dal – Sad',type:'letters',set:[7,8,9,10,11,12,13]},
+ {id:'h3',t:'Harfler 3',s:'Dad – Kaf',type:'letters',set:[14,15,16,17,18,19,20]},
+ {id:'h4',t:'Harfler 4',s:'Kef – Ye',type:'letters',set:[21,22,23,24,25,26,27]},
+ {id:'la',t:'Lamelif',s:'Lam ile Elif birleşince',type:'lamelif'},
+ {id:'nk',t:'Noktalı kardeşler',s:'Benzer harfleri ayır',type:'dots'},
+ {id:'sk',t:'Harflerin şekilleri',s:'Başta, ortada, sonda',type:'forms'},
+ {id:'us',t:'Üstün',s:'be, te, sa …',type:'hareke',h:0},
+ {id:'es',t:'Esre',s:'bi, ti, sı …',type:'hareke',h:1},
+ {id:'ot',t:'Ötre',s:'bü, tü, su …',type:'hareke',h:2},
+ {id:'cz',t:'Cezm',s:'eb, min, kul …',type:'cezm'}
+];
+const NODE_GLYPH={h1:'ا',h2:'د',h3:'ض',h4:'ك',la:'لا',nk:'ث',sk:'بـ',us:'بَ',es:'بِ',ot:'بُ',cz:'بْ'};
+// Lamelif: Lam ile Elif'in birleşik yazılışı; kendisinden sonraki harfe bitişmez
+const LA={c:'لا',n:'Lamelif',t:'l'};
+// Cezm (sükûn): harfi sessiz yapar, önceki harekeli harfle birlikte okunur
+const CEZM='\u0652';
+const CZ_EX=[['ا',0,'ب'],['ا',1,'ب'],['ا',2,'ب'],['م',1,'ن'],['ق',2,'ل'],['ل',0,'م'],['ه',0,'ل'],['ق',0,'د'],['ع',0,'ن']];
+// rastgele sorularda cezmli harf yalnızca ince ve kuralı basit harflerden seçilir (kalın harf, Ra, Elif, Vav, Ye, Ayn dışarıda)
+const CZ_SAKIN=['ب','ت','ث','ج','د','ذ','ز','س','ش','ف','ك','ل','م','ن','ه'];
+const czWord=(a,h,b)=>BYC[a].c+HAREKE[h].m+BYC[b].c+CEZM;
+const czRead=(a,h,b)=>reading(BYC[a],h)+BYC[b].t;
+
+/* ---------- durum ---------- */
+const KEY='elifba-duragi-deneme-v1';
+let S={stars:{},sound:true,all:false};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&typeof s==='object')S=Object.assign(S,s)}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const unlocked=i=>S.all||i===0||(S.stars[LESSONS[i-1].id]||0)>0;
+const totalStars=()=>Object.values(S.stars).reduce((a,b)=>a+(b||0),0);
+
+/* ---------- ses ---------- */
+let voices=[];
+function loadVoices(){try{voices=window.speechSynthesis?speechSynthesis.getVoices():[]}catch(e){voices=[]}}
+if(window.speechSynthesis){loadVoices();try{speechSynthesis.onvoiceschanged=loadVoices}catch(e){}}
+const voiceFor=l=>voices.find(v=>(v.lang||'').toLowerCase().startsWith(l));
+function say(text,lang,quiet){
+  if(!S.sound)return false;
+  const v=voiceFor(lang);
+  if(!v||!window.speechSynthesis){if(!quiet)toast(lang==='ar'?'Bu cihazda Arapça ses yok. Gerçek ses kayıtları eklendiğinde burada dinlenecek.':'Bu cihazda Türkçe ses yok.');return false}
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.voice=v;u.lang=v.lang;u.rate=lang==='ar'?.65:.9;speechSynthesis.speak(u)}catch(e){return false}
+  return true;
+}
+let AC=null;
+function sfx(ok){
+  if(!S.sound)return;
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
+    (ok?[[660,0],[880,.11]]:[[220,0]]).forEach(([f,d])=>{const o=AC.createOscillator(),g=AC.createGain();o.type=ok?'sine':'triangle';o.frequency.value=f;
+      g.gain.setValueAtTime(.0001,t+d);g.gain.exponentialRampToValueAtTime(.18,t+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d+(ok?.22:.3));
+      o.connect(g).connect(AC.destination);o.start(t+d);o.stop(t+d+.35)})}catch(e){}
+}
+
+/* ---------- yardımcılar ---------- */
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=(a,n)=>shuffle(a).slice(0,n);
+let toastT;
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3200)}
+const live=m=>{$('#live').textContent=m};
+const I={
+ star:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>',
+ back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+ lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>',
+ spk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M16 9a4 4 0 010 6M18.5 6.5a7.5 7.5 0 010 11"/></svg>',
+ mute:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>',
+ next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>'
+};
+const starRow=(n,cls='stars')=>`<div class="${cls}" aria-label="${n} yıldız">${[0,1,2].map(i=>I.star.replace('<svg','<svg class="'+(i<n?'on':'')+'"')).join('')}</div>`;
+const soundBtn=()=>`<button class="icon-btn" data-act="sound" aria-label="${S.sound?'Sesi kapat':'Sesi aç'}">${S.sound?I.spk:I.mute}</button>`;
+
+/* ---------- ana ekran ---------- */
+function home(){
+  const nextIdx=LESSONS.findIndex((l,i)=>unlocked(i)&&!S.stars[l.id]);
+  app.innerHTML=`
+  <header class="top">
+    <div class="brand"><div class="mark" aria-hidden="true"><span>ب</span></div><div><h1>Elifba Durağı</h1><small>Deneme sürümü</small></div></div>
+    <div class="pill" aria-label="Toplam ${totalStars()} yıldız">${I.star}${totalStars()}</div>
+    ${soundBtn()}
+  </header>
+  <p class="hello">Selam! Bugün hangi durağa gidelim?</p>
+  <p class="hello-sub">Her durakta önce harflerle tanış, sonra oyunu oyna. Yıldız topladıkça yeni duraklar açılır.</p>
+  <ol class="path">
+  ${LESSONS.map((l,i)=>{const st=S.stars[l.id]||0,open=unlocked(i);
+    return `<li class="stop ${open?'':'locked'} ${st?'done':''} ${i===nextIdx?'next':''}">
+      <button class="node" data-act="open" data-i="${i}" ${open?'':'aria-disabled="true"'} aria-label="${i+1}. durak: ${l.t}${open?'':' (kilitli)'}">
+        <span class="ar" lang="ar">${NODE_GLYPH[l.id]}</span>${open?'':`<span class="lock">${I.lock}</span>`}</button>
+      <div class="stop-txt"><b>${l.t}</b><span>${l.s}</span>${starRow(st)}</div></li>`}).join('')}
+  </ol>
+  <details class="note">
+    <summary><span class="tag">Ebeveyn ve öğretmen</span> Bu deneme hakkında</summary>
+    <div class="note-body">
+      <p>Bu sürüm, Kur'an okumaya hazırlık için çocuklara yönelik bir uygulamanın nasıl görüneceğini denemek için yapıldı.</p>
+      <ul>
+        <li><b>Sesler geçici.</b> Hece sesleri cihazın Arapça konuşma motoruyla, harf adları Türkçe motorla okunuyor. Konuşma motoru heceleri Arapça söyler (örneğin بَ için “ba”); ekrandaki okunuş Türkiye'deki elifba geleneğini izler (“be”). Gerçek uygulamada mahreci doğru, kayıtlı ses kullanılmalı.</li>
+        <li><b>Okunuşlar</b> Türkiye'deki elifba geleneğine göre yazıldı: ince harfler e‑i‑ü, kalın harfler (ح خ ص ض ط ظ ع غ ق) a‑ı‑u ile okunur; Ra üstün ve ötrede kalın, esrede ince.</li>
+        <li><b>İçerik bir hoca tarafından kontrol edilmedi.</b> Yayından önce harf adları, okunuşlar ve hareke yerleşimi ehil biri tarafından gözden geçirilmeli.</li>
+        <li><b>Lamelif</b> dersinde üstünlü Lam'dan sonra gelen Elif'in sesi uzattığı (لَا “lâ”) da gösterilir. <b>Cezm</b> dersinde cezmli harf yalnızca ince harflerden seçilir; kalın harf, Ra ve uzatma harfleri (Elif, Vav, Ye) cezmli sorulmaz, çünkü okunuşları ayrı kurallar ister.</li>
+        <li>Henüz yok: şedde, tenvin, med, kelime ve ayet okuma.</li>
+        <li>İlerleme yalnızca bu tarayıcıda saklanır.</li>
+      </ul>
+      <label class="switch"><input type="checkbox" id="all" ${S.all?'checked':''}> Bütün durakları aç (deneme için)</label>
+    </div>
+  </details>`;
+}
+
+/* ---------- ders ---------- */
+let D=null; // {li, phase:'cards'|'quiz'|'result', cards, ci, flipped, qs, qi, mistakes, answered}
+function openLesson(i){
+  const L=LESSONS[i];
+  D={li:i,phase:'cards',cards:buildCards(L),ci:0,flipped:false};
+  lesson();
+}
+function buildCards(L){
+  if(L.type==='letters')return L.set.map(i=>({k:'letter',l:LETTERS[i]}));
+  if(L.type==='dots')return SIBS.map(g=>({k:'sib',g}));
+  if(L.type==='lamelif')return [{k:'laintro'},{k:'laforms'},{k:'lasyl'}];
+  if(L.type==='cezm')return [{k:'czintro'},...CZ_EX.map(w=>({k:'czw',w})),{k:'czgrid'}];
+  if(L.type==='forms')return ['ب','ج','س','ع','ه','ك','ل','د'].map(c=>({k:'forms',l:BYC[c]}));
+  const h=L.h;
+  return [{k:'hintro',h},...['ب','ت','ر','ص','ق','ل','م'].map(c=>({k:'syl',l:BYC[c],h})),{k:'sylgrid',h}];
+}
+function cardHTML(c){
+  if(c.k==='letter'){const l=c.l;
+    if(!D.flipped)return `<button class="tile" data-act="flip" style="width:100%;border-style:solid" aria-label="${l.n} harfi. Çevirmek için dokun">
+      <p class="glyph" lang="ar">${l.c}</p><span class="flip-hint">Dokun, adını öğren</span></button>`;
+    const f=forms(l);
+    return `<div class="tile"><p class="glyph" lang="ar" style="font-size:clamp(90px,28vw,120px)">${l.c}</p>
+      <p class="cname">${l.n}</p>
+      <div class="badges">${l.k?'<span class="badge kalin">Kalın okunur</span>':'<span class="badge">İnce okunur</span>'}${l.j?'':'<span class="badge">Sonraki harfe bitişmez</span>'}</div>
+      <div class="forms" aria-label="Harfin şekilleri">${f.map((g,i)=>`<div><span class="ar" lang="ar">${g}</span><small>${FORM_AD[i]}</small></div>`).join('')}</div>
+      <button class="speak" data-act="say" data-t="${l.n}" data-l="tr">${I.spk} Adını dinle</button></div>`}
+  if(c.k==='sib')return `<div class="tile"><p class="lead">Şekilleri aynı, noktaları farklı!</p>
+      <div class="sib">${c.g.map(ch=>`<div><span class="ar" lang="ar">${ch}</span><b>${BYC[ch].n}</b><small>${dotWhere(ch)}</small></div>`).join('')}</div>
+      <p class="flip-hint" style="margin-top:12px">Noktaları say, yerine bak.</p></div>`;
+  if(c.k==='forms'){const f=forms(c.l);
+    return `<div class="tile"><p class="cname" style="margin-top:6px">${c.l.n}</p>
+      <p class="flip-hint">Kelimenin neresinde olduğuna göre şekli değişir.</p>
+      <div class="forms" style="margin-top:10px">${f.map((g,i)=>`<div><span class="ar" lang="ar" style="font-size:54px">${g}</span><small>${FORM_AD[i]}</small></div>`).join('')}</div>
+      ${c.l.j?'':'<p class="flip-hint">'+c.l.n+' kendisinden sonraki harfe bitişmez.</p>'}</div>`}
+  if(c.k==='hintro'){const H=HAREKE[c.h];
+    return `<div class="tile"><div class="intro-mark" lang="ar" dir="rtl">${T+T+H.m+T+T}</div>
+      <p class="cname">${H.ad}</p>
+      <p class="lead">${H.ad} ${H.yer} konur.<br>Harfi “${H.ince}” ya da kalın harflerde “${H.kalin}” sesiyle okuruz.</p>
+      <div class="sib" style="margin-top:6px">${['ب','ق'].map(ch=>`<div><span class="ar" lang="ar">${ch+H.m}</span><b>${reading(BYC[ch],c.h)}</b><small>${BYC[ch].k?'kalın':'ince'}</small></div>`).join('')}</div></div>`}
+  if(c.k==='syl'){const s=c.l.c+HAREKE[c.h].m;
+    return `<div class="tile"><p class="glyph" lang="ar">${s}</p><p class="read">${reading(c.l,c.h)}</p>
+      <p class="flip-hint">${c.l.n} + ${HAREKE[c.h].ad}${c.l.k?' · kalın harf':''}</p>
+      <button class="speak" data-act="say" data-t="${s}" data-l="ar">${I.spk} Dinle</button></div>`}
+  if(c.k==='laintro')return `<div class="tile"><p class="lead">Lam ile Elif yan yana gelince birleşir.</p>
+      <div class="sib">${[BYC['ل'],BYC['ا']].map(l=>`<div><span class="ar" lang="ar">${l.c}</span><b>${l.n}</b></div>`).join('<div style="min-width:0;background:none;align-self:center"><b style="font-size:34px">+</b></div>')}</div>
+      <p class="glyph" lang="ar" style="font-size:clamp(100px,30vw,130px)">${LA.c}</p><p class="cname">Lamelif</p>
+      <button class="speak" data-act="say" data-t="Lamelif" data-l="tr">${I.spk} Adını dinle</button></div>`;
+  if(c.k==='laforms')return `<div class="tile"><p class="cname" style="margin-top:6px">Lamelif</p>
+      <p class="flip-hint">İki şekli var. Kendisinden sonraki harfe bitişmez.</p>
+      <div class="forms" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px">${[[LA.c,'Tek'],[T+LA.c,'Sonda']].map(([g,a])=>`<div><span class="ar" lang="ar" style="font-size:64px">${g}</span><small>${a}</small></div>`).join('')}</div></div>`;
+  if(c.k==='lasyl')return `<div class="tile"><p class="lead">Üstünlü Lam'dan sonra gelen Elif sesi uzatır.</p>
+      <div class="sib">${[['ل'+HAREKE[0].m,'le','kısa'],['ل'+HAREKE[0].m+'ا','lâ','uzun']].map(([s,r,k])=>`<div><span class="ar" lang="ar">${s}</span><b>${r}</b><small>${k}</small><button class="speak" data-act="say" data-t="${s}" data-l="ar" aria-label="${r} dinle" style="margin-top:6px;min-height:44px;padding:4px 12px">${I.spk}</button></div>`).join('')}</div></div>`;
+  if(c.k==='czintro')return `<div class="tile"><div class="intro-mark" lang="ar" dir="rtl">${T+T+CEZM+T+T}</div>
+      <p class="cname">Cezm</p>
+      <p class="lead">Cezm harfin üstüne konur ve harfi sessiz yapar.<br>Cezmli harf, önündeki harekeli harfle birlikte okunur.</p>
+      <div class="sib" style="margin-top:6px">${[['ا',0,'ب'],['م',1,'ن']].map(([a,h,b])=>`<div><span class="ar" lang="ar">${czWord(a,h,b)}</span><b>${czRead(a,h,b)}</b></div>`).join('')}</div></div>`;
+  if(c.k==='czw'){const [a,h,b]=c.w,w=czWord(a,h,b);
+    return `<div class="tile"><p class="glyph" lang="ar" style="font-size:clamp(100px,32vw,140px)">${w}</p><p class="read">${czRead(a,h,b)}</p>
+      <p class="flip-hint">${BYC[a].n} + ${HAREKE[h].ad} · ${BYC[b].n} + Cezm</p>
+      <button class="speak" data-act="say" data-t="${w}" data-l="ar">${I.spk} Dinle</button></div>`}
+  if(c.k==='czgrid')return `<div class="tile"><p class="lead">Hepsi bir arada! Dokun, dinle.</p>
+      <div class="syl" style="grid-template-columns:repeat(3,minmax(0,1fr))">${CZ_EX.map(([a,h,b])=>{const w=czWord(a,h,b),r=czRead(a,h,b);return `<button data-act="say" data-t="${w}" data-l="ar" aria-label="${r}"><span class="ar" lang="ar">${w}</span><small>${r}</small></button>`}).join('')}</div></div>`;
+  if(c.k==='sylgrid')return `<div class="tile"><p class="lead">Hepsi bir arada! Dokun, dinle.</p>
+      <div class="syl">${LETTERS.map(l=>{const s=l.c+HAREKE[c.h].m;return `<button data-act="say" data-t="${s}" data-l="ar" aria-label="${reading(l,c.h)}"><span class="ar" lang="ar">${s}</span><small>${reading(l,c.h)}</small></button>`}).join('')}</div></div>`;
+}
+function lesson(){
+  const L=LESSONS[D.li];
+  if(D.phase==='result')return result();
+  const head=`<header class="lhead"><button class="icon-btn" data-act="home" aria-label="Yola dön">${I.back}</button>
+    <div class="ttl"><b>${L.t}</b><span>${D.phase==='cards'?'Tanış':'Oyna'}</span></div>${soundBtn()}</header>`;
+  if(D.phase==='cards'){
+    const n=D.cards.length,last=D.ci===n-1;
+    app.innerHTML=head+`<div class="bar" aria-hidden="true"><i style="width:${(D.ci+1)/n*100}%"></i></div>
+      ${cardHTML(D.cards[D.ci])}
+      <div class="row">
+        <button class="btn" data-act="prev" ${D.ci?'':'disabled'} aria-label="Önceki">${I.back}</button>
+        ${last?`<button class="btn sun" data-act="play" style="flex:3">Oyuna geç ${I.next}</button>`:`<button class="btn primary" data-act="nextc" style="flex:3">Sonraki ${I.next}</button>`}
+      </div>
+      ${last?'':`<div class="row" style="margin-top:12px"><button class="btn" data-act="play">Kartları atla, oyna</button></div>`}`;
+    return;
+  }
+  const q=D.qs[D.qi];
+  app.innerHTML=head+`<div class="bar" aria-hidden="true"><i style="width:${D.done/D.goal*100}%"></i></div>
+    <p class="q-prompt">${q.prompt}</p>
+    <div class="tile q-card">${q.show}</div>
+    <div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-act="ans" data-i="${i}" aria-label="${o.label}">${o.html}</button>`).join('')}</div>
+    <div class="fb" id="fb"></div>`;
+  if(q.auto)setTimeout(()=>say(q.auto[0],q.auto[1],true),250);
+}
+
+/* ---------- oyun soruları ---------- */
+const optL=l=>({key:l.c,html:`<span class="ar" lang="ar">${l.c}</span>`,label:l.n});
+const optN=l=>({key:l.n,html:l.n,label:l.n});
+function distract(ans,pool,n,keyf){const seen=new Set([keyf(ans)]),out=[];for(const x of shuffle(pool)){const k=keyf(x);if(!seen.has(k)){seen.add(k);out.push(x)}if(out.length===n)break}return out}
+function qName(l,pool){const d=distract(l,pool,3,x=>x.n);return {prompt:'Bu harfin adı ne?',show:`<p class="glyph" lang="ar">${l.c}</p>`,opts:shuffle([l,...d]).map(optN),ans:l.n,tell:l.n}}
+function qFind(l,pool){const d=distract(l,pool,3,x=>x.c);return {prompt:`<b>${l.n}</b> harfini bul!`,show:`<p class="q-name">${l.n}</p><button class="speak" data-act="say" data-t="${l.n}" data-l="tr">${I.spk} Dinle</button>`,opts:shuffle([l,...d]).map(optL),ans:l.c,tell:l.n,auto:[l.n,'tr']}}
+function qForm(l){const f=forms(l),fi=l.j?1+(Math.random()*3|0):3;const d=distract(l,LETTERS,3,x=>x.c);
+  return {prompt:'Bu şekil hangi harf?',show:`<p class="glyph" lang="ar">${f[fi]}</p><span class="flip-hint">${FORM_AD[fi]}</span>`,opts:shuffle([l,...d]).map(optL),ans:l.c,tell:l.n}}
+function qRead(l,h){const s=l.c+HAREKE[h].m,r=reading(l,h);
+  const cand=[...[0,1,2].filter(x=>x!==h).map(x=>reading(l,x)),...LETTERS.filter(x=>x.c!==l.c).map(x=>reading(x,h))];
+  const d=[];for(const x of [...shuffle(cand.slice(0,2)),...shuffle(cand.slice(2))]){if(x!==r&&!d.includes(x))d.push(x);if(d.length===3)break}
+  return {prompt:'Bu hece nasıl okunur?',show:`<p class="glyph" lang="ar">${s}</p>`,opts:shuffle([r,...d]).map(x=>({key:x,html:x,label:x})),ans:r,tell:r}}
+function qHear(l,h){const s=l.c+HAREKE[h].m;const d=distract(l,LETTERS,3,x=>reading(x,h));
+  return {prompt:'Dinle ve doğru heceyi bul!',show:`<button class="speak" data-act="say" data-t="${s}" data-l="ar" style="min-height:64px;font-size:20px">${I.spk} Tekrar dinle</button>`,
+    opts:shuffle([l,...d]).map(x=>({key:x.c,html:`<span class="ar" lang="ar">${x.c+HAREKE[h].m}</span>`,label:reading(x,h)})),ans:l.c,tell:reading(l,h),auto:[s,'ar']}}
+function qLaForm(){const pool=[LA,BYC['ل'],BYC['ا'],BYC['ك'],BYC['ن']];const d=distract(LA,pool,3,x=>x.c);
+  return {prompt:'Bu şekil hangi harf?',show:`<p class="glyph" lang="ar">${T+LA.c}</p><span class="flip-hint">Sonda</span>`,opts:shuffle([LA,...d]).map(optL),ans:LA.c,tell:LA.n}}
+function qLaRead(long){const s='ل'+HAREKE[0].m+(long?'ا':''),r=long?'lâ':'le';
+  return {prompt:'Bu nasıl okunur?',show:`<p class="glyph" lang="ar">${s}</p>`,opts:shuffle(['lâ','le','li','lü']).map(x=>({key:x,html:x,label:x})),ans:r,tell:r}}
+function qCz(a,h,b){const w=czWord(a,h,b),r=czRead(a,h,b);
+  const cand=[reading(BYC[a],h)+reading(BYC[b],h),...[0,1,2].filter(x=>x!==h).map(x=>czRead(a,x,b)),...shuffle(CZ_SAKIN.filter(x=>x!==b)).map(x=>czRead(a,h,x))];
+  const d=[];for(const x of cand){if(x!==r&&!d.includes(x))d.push(x);if(d.length===3)break}
+  return {prompt:'Bu nasıl okunur?',show:`<p class="glyph" lang="ar">${w}</p>`,opts:shuffle([r,...d]).map(x=>({key:x,html:x,label:x})),ans:r,tell:r}}
+function buildQuiz(L){
+  let qs=[];
+  if(L.type==='lamelif'){const pool=[LA,BYC['ل'],BYC['ا'],BYC['ك'],BYC['ن']];
+    return shuffle([qName(LA,pool),qName(LA,pool),qFind(LA,pool),qFind(LA,pool),qLaForm(),qLaForm(),qLaRead(true),qLaRead(false)])}
+  if(L.type==='cezm'){const ex=pick(CZ_EX,4).map(w=>qCz(...w));
+    const rnd=[];while(rnd.length<4){const a=pick(LETTERS.filter(l=>l.c!=='ا'),1)[0].c,b=pick(CZ_SAKIN,1)[0];if(a!==b)rnd.push(qCz(a,Math.random()*3|0,b))}
+    return shuffle([...ex,...rnd])}
+  if(L.type==='letters'){const set=L.set.map(i=>LETTERS[i]);
+    qs=shuffle(set).map((l,i)=>i%2?qFind(l,set):qName(l,set));
+    qs.push(qName(pick(set,1)[0],LETTERS));}
+  else if(L.type==='dots'){qs=shuffle(SIBS).map(g=>{const c=pick(g,1)[0],l=BYC[c],pool=[...g.map(x=>BYC[x]),...pick(LETTERS,4)];return Math.random()<.5?qName(l,pool):qFind(l,pool)}).slice(0,8)}
+  else if(L.type==='forms'){qs=pick(LETTERS.filter(l=>l.c!=='ا'),8).map(qForm)}
+  else{const hasAr=!!voiceFor('ar');qs=pick(LETTERS,8).map((l,i)=>hasAr&&i%3===2?qHear(l,L.h):qRead(l,L.h))}
+  return qs;
+}
+function startQuiz(){D.phase='quiz';D.qs=buildQuiz(LESSONS[D.li]);D.qi=0;D.goal=D.qs.length;D.done=0;D.mistakes=0;D.answered=false;lesson()}
+const PRAISE=['Aferin!','Harika!','Süpersin!','Çok güzel!','Maşallah!'];
+function answer(i){
+  if(D.answered)return;D.answered=true;
+  const q=D.qs[D.qi],o=q.opts[i],ok=o.key===q.ans;
+  const btns=[...document.querySelectorAll('.opt')];btns.forEach(b=>b.disabled=true);
+  const fb=$('#fb');
+  if(ok){btns[i].classList.add('ok');fb.className='fb ok';fb.textContent=PRAISE[Math.random()*PRAISE.length|0];sfx(true);D.done++;live('Doğru! '+fb.textContent)}
+  else{btns[i].classList.add('no');const ri=q.opts.findIndex(x=>x.key===q.ans);btns[ri].classList.add('ok');fb.className='fb no';fb.textContent='Doğrusu: '+q.tell;sfx(false);D.mistakes++;
+    live('Doğrusu '+q.tell);if(D.qs.length<D.goal+4)D.qs.push(Object.assign({},q,{opts:shuffle(q.opts)}));}
+  setTimeout(()=>{D.qi++;D.answered=false;
+    if(D.qi>=D.qs.length){const st=D.mistakes<=1?3:D.mistakes<=3?2:1;D.got=st;const id=LESSONS[D.li].id;S.stars[id]=Math.max(S.stars[id]||0,st);save();D.phase='result'}
+    lesson()},ok?900:1700);
+}
+function result(){
+  const L=LESSONS[D.li],nx=D.li+1<LESSONS.length?D.li+1:-1,st=D.got;
+  const msg=st===3?'Muhteşem, hiç zorlanmadın!':st===2?'Çok iyi gidiyorsun!':'Güzel başlangıç! Bir daha oynarsan daha çok yıldız kazanırsın.';
+  app.innerHTML=`<header class="lhead"><button class="icon-btn" data-act="home" aria-label="Yola dön">${I.back}</button><div class="ttl"><b>${L.t}</b><span>Bitti</span></div>${soundBtn()}</header>
+  <div class="result">${starRow(st,'big-stars')}<h2>${st} yıldız!</h2><p>${msg}</p></div>
+  <div class="row" style="margin-top:30px">${nx>=0?`<button class="btn primary" data-act="open" data-i="${nx}">Sonraki durak ${I.next}</button>`:''}</div>
+  <div class="row"><button class="btn" data-act="again">Tekrar oyna</button><button class="btn" data-act="home">Yola dön</button></div>`;
+  sfx(true);live(st+' yıldız kazandın');
+}
+
+/* ---------- olaylar ---------- */
+app.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
+  if(a==='open'){const i=+b.dataset.i;if(!unlocked(i)){toast('Bu durak, önceki durağı bitirince açılır.');return}openLesson(i);window.scrollTo(0,0)}
+  else if(a==='home'){try{speechSynthesis.cancel()}catch(x){}D=null;home();window.scrollTo(0,0)}
+  else if(a==='sound'){S.sound=!S.sound;save();if(!S.sound)try{speechSynthesis.cancel()}catch(x){}b.outerHTML=soundBtn()}
+  else if(a==='flip'){D.flipped=true;lesson()}
+  else if(a==='nextc'){D.ci++;D.flipped=false;lesson()}
+  else if(a==='prev'){D.ci--;D.flipped=false;lesson()}
+  else if(a==='play'){startQuiz();window.scrollTo(0,0)}
+  else if(a==='ans')answer(+b.dataset.i);
+  else if(a==='again'){startQuiz()}
+  else if(a==='say')say(b.dataset.t,b.dataset.l);
+});
+app.addEventListener('change',e=>{if(e.target.id==='all'){S.all=e.target.checked;save();home();document.querySelector('.note').open=true}});
+home();
+</script>
