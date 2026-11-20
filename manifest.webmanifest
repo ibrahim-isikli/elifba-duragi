@@ -1,7 +1,7 @@
 {
   "name": "Elifba Durağı",
   "short_name": "Elifba",
-  "description": "Çocuklar için Kur'an okumaya hazırlık: harfler, harekeler, tenvin, cezm, şedde ve med. İnternetsiz çalışır.",
+  "description": "Çocuklar için Kur'an okumaya hazırlık: harfler, harekeler, tenvin, cezm, şedde, med ve kelime okuma. İnternetsiz çalışır.",
   "lang": "tr",
   "start_url": "./",
   "scope": "./",

@@ -2,7 +2,7 @@
 
 Çocuklar için Kur'an okumaya hazırlık uygulaması (deneme sürümü). Telefona kurulabilir ve internetsiz çalışır.
 
-**Dersler:** Harfler (4 ders) · Lamelif · Noktalı kardeşler · Harflerin şekilleri · Üstün · Esre · Ötre · Tenvin · Cezm · Şedde · Med.
+**Dersler:** Harfler (4 ders) · Lamelif · Noktalı kardeşler · Harflerin şekilleri · Üstün · Esre · Ötre · Tenvin · Cezm · Şedde · Med · Kelime okuma (2 ders) · Karışık tekrar.
 Her durakta önce kartlarla tanışılır, sonra kısa bir oyun oynanır; yıldız kazanılınca sonraki durak açılır.
 
 ## Deneme sürümü notları
@@ -20,5 +20,6 @@ Her durakta önce kartlarla tanışılır, sonra kısa bir oyun oynanır; yıld�
 | `build.py` | `index.html` ve `sw.js` dosyalarını üretir: `python3 build.py` |
 | `fonts/` | Yerel fontlar (Baloo 2, Nunito, Scheherazade New; SIL Open Font License 1.1). Yeniden indirmek için: `python3 araclar/fontlari_indir.py` |
 | `icons/` | Uygulama ikonları. Yeniden çizmek için: `node araclar/ikonlar.js` |
+| `hoca-kontrol-listesi.md` | Uygulamadaki bütün Arapça içerik ve okunuşlar, hoca kontrolü için işaretlenebilir liste. Uygulamanın verisinden üretilir: `node araclar/kontrol_listesi.js` |
 
-Kaynakta değişiklik yaptıktan sonra `python3 build.py` çalıştırılır; service worker sürümü kendiliğinden değişir.
+Kaynakta değişiklik yaptıktan sonra `python3 build.py` ve `node araclar/kontrol_listesi.js` çalıştırılır; service worker sürümü kendiliğinden değişir.

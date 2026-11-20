@@ -17,7 +17,7 @@ head = '''<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Çocuklar için Kur'an okumaya hazırlık: harfler, harekeler, tenvin, cezm, şedde ve med. İnternetsiz çalışır.">
+<meta name="description" content="Çocuklar için Kur'an okumaya hazırlık: harfler, harekeler, tenvin, cezm, şedde, med ve kelime okuma. İnternetsiz çalışır.">
 <meta name="theme-color" content="#0B7A77">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
