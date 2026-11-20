@@ -123,6 +123,10 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .sib .ar{display:block;font-size:76px;line-height:1.45}
 .sib b{font-family:var(--f-ui);font-size:18px}
 .sib small{display:block;color:var(--muted);font-weight:700;font-size:12px}
+.pairs{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.sib.pair{flex-wrap:nowrap}
+.sib.pair>div{flex:1 1 0;min-width:0}
+.sib.pair .ar{font-size:60px;line-height:1.9}
 .syl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;direction:rtl;margin-top:6px}
 .syl button{border:0;border-radius:16px;background:var(--tile-soft);padding:0 2px 6px;direction:ltr;box-shadow:0 3px 0 var(--press)}
 .syl button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--press)}
@@ -217,9 +221,12 @@ const LESSONS=[
  {id:'us',t:'Üstün',s:'be, te, sa …',type:'hareke',h:0},
  {id:'es',t:'Esre',s:'bi, ti, sı …',type:'hareke',h:1},
  {id:'ot',t:'Ötre',s:'bü, tü, su …',type:'hareke',h:2},
- {id:'cz',t:'Cezm',s:'eb, min, kul …',type:'cezm'}
+ {id:'tn',t:'Tenvin',s:'ben, bin, bün …',type:'tenvin'},
+ {id:'cz',t:'Cezm',s:'eb, min, kul …',type:'cezm'},
+ {id:'sd',t:'Şedde',s:'ebbe, rabbi …',type:'sedde'},
+ {id:'md',t:'Med',s:'bâ, bî, bû …',type:'med'}
 ];
-const NODE_GLYPH={h1:'ا',h2:'د',h3:'ض',h4:'ك',la:'لا',nk:'ث',sk:'بـ',us:'بَ',es:'بِ',ot:'بُ',cz:'بْ'};
+const NODE_GLYPH={h1:'ا',h2:'د',h3:'ض',h4:'ك',la:'لا',nk:'ث',sk:'بـ',us:'بَ',es:'بِ',ot:'بُ',tn:'بٌ',cz:'بْ',sd:'بّ',md:'بَا'};
 // Lamelif: Lam ile Elif'in birleşik yazılışı; kendisinden sonraki harfe bitişmez
 const LA={c:'لا',n:'Lamelif',t:'l'};
 // Cezm (sükûn): harfi sessiz yapar, önceki harekeli harfle birlikte okunur
@@ -229,13 +236,31 @@ const CZ_EX=[['ا',0,'ب'],['ا',1,'ب'],['ا',2,'ب'],['م',1,'ن'],['ق',2,'ل
 const CZ_SAKIN=['ب','ت','ث','ج','د','ذ','ز','س','ش','ف','ك','ل','م','ن','ه'];
 const czWord=(a,h,b)=>BYC[a].c+HAREKE[h].m+BYC[b].c+CEZM;
 const czRead=(a,h,b)=>reading(BYC[a],h)+BYC[b].t;
+// Tenvin: iki üstün, iki esre, iki ötre. Harekenin okunuşuna "n" eklenir (ben, bin, bün; kalın: kan, kın, kun)
+const TENVIN=[{m:'\u064B',ad:'İki üstün'},{m:'\u064D',ad:'İki esre'},{m:'\u064C',ad:'İki ötre'}];
+const tnWord=(L,h)=>L.c+TENVIN[h].m;
+const tnRead=(L,h)=>reading(L,h)+'n';
+const TN_BASE=LETTERS.filter(l=>l.c!=='ا');
+// Şedde: harf iki kere okunur; önce önceki harfle birlikte sessiz, sonra kendi harekesiyle (ebbe, rabbi)
+const SEDDE='\u0651';
+const SD_EX=[['ا',0,'ب',0],['ا',0,'ت',0],['ا',0,'م',0],['ا',1,'ن',0],['ر',0,'ب',1],['ث',2,'م',0],['ك',2,'ل',2],['ح',0,'ق',2]];
+const sdWord=(a,ha,b,hb)=>BYC[a].c+HAREKE[ha].m+BYC[b].c+SEDDE+HAREKE[hb].m;
+const sdRead=(a,ha,b,hb)=>reading(BYC[a],ha)+BYC[b].t+reading(BYC[b],hb);
+// rastgele şedde sorularında iki harf de ince ve kuralı basit harflerden seçilir
+const SD_ILK=['ا',...CZ_SAKIN];
+// Med: üstünden sonra Elif, esreden sonra Ye, ötreden sonra Vav gelince ses uzar (bâ, bî, bû)
+const MED=['ا','ي','و'],MED_V=['â','î','û'];
+const mdWord=(L,h)=>L.c+HAREKE[h].m+MED[h];
+const mdRead=(L,h)=>L.t+MED_V[h];
+const MD_BASE=LETTERS.filter(l=>!['ا','و','ي'].includes(l.c));
+const GRID9=['ب','ت','ج','د','ر','س','ق','ل','م'];
 
 /* ---------- durum ---------- */
 const KEY='elifba-duragi-deneme-v1';
 let S={stars:{},sound:true,all:false};
 try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&typeof s==='object')S=Object.assign(S,s)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
-const unlocked=i=>S.all||i===0||(S.stars[LESSONS[i-1].id]||0)>0;
+const unlocked=i=>S.all||i===0||(S.stars[LESSONS[i-1].id]||0)>0||(S.stars[LESSONS[i].id]||0)>0;
 const totalStars=()=>Object.values(S.stars).reduce((a,b)=>a+(b||0),0);
 
 /* ---------- ses ---------- */
@@ -305,7 +330,9 @@ function home(){
         <li><b>Okunuşlar</b> Türkiye'deki elifba geleneğine göre yazıldı: ince harfler e‑i‑ü, kalın harfler (ح خ ص ض ط ظ ع غ ق) a‑ı‑u ile okunur; Ra üstün ve ötrede kalın, esrede ince.</li>
         <li><b>İçerik bir hoca tarafından kontrol edilmedi.</b> Yayından önce harf adları, okunuşlar ve hareke yerleşimi ehil biri tarafından gözden geçirilmeli.</li>
         <li><b>Lamelif</b> dersinde üstünlü Lam'dan sonra gelen Elif'in sesi uzattığı (لَا “lâ”) da gösterilir. <b>Cezm</b> dersinde cezmli harf yalnızca ince harflerden seçilir; kalın harf, Ra ve uzatma harfleri (Elif, Vav, Ye) cezmli sorulmaz, çünkü okunuşları ayrı kurallar ister.</li>
-        <li>Henüz yok: şedde, tenvin, med, kelime ve ayet okuma.</li>
+        <li><b>Tenvin</b> harf üzerinde tek başına gösterilir (بً “ben”). Kelimelerde iki üstünün çoğunlukla sonuna yazılan bir Elif ile geldiği (بًا) sonraki aşamaya bırakıldı.</li>
+        <li><b>Şedde</b> rastgele sorularında iki harf de ince harflerden seçilir. <b>Med</b> harfleri (Elif, Ye, Vav) elifba kitaplarındaki gibi cezmsiz yazıldı; uzun okunuş â, î, û ile gösterilir.</li>
+        <li>Henüz yok: kelime ve ayet okuma, zamir ve vakf kuralları, tecvid.</li>
         <li>İlerleme yalnızca bu tarayıcıda saklanır.</li>
       </ul>
       <label class="switch"><input type="checkbox" id="all" ${S.all?'checked':''}> Bütün durakları aç (deneme için)</label>
@@ -324,6 +351,9 @@ function buildCards(L){
   if(L.type==='letters')return L.set.map(i=>({k:'letter',l:LETTERS[i]}));
   if(L.type==='dots')return SIBS.map(g=>({k:'sib',g}));
   if(L.type==='lamelif')return [{k:'laintro'},{k:'laforms'},{k:'lasyl'}];
+  if(L.type==='tenvin')return [{k:'tnintro'},{k:'tn',h:0},{k:'tn',h:1},{k:'tn',h:2},{k:'tngrid'}];
+  if(L.type==='sedde')return [{k:'sdintro'},...SD_EX.map(w=>({k:'sdw',w})),{k:'sdgrid'}];
+  if(L.type==='med')return [{k:'mdintro'},{k:'md',h:0},{k:'md',h:1},{k:'md',h:2},{k:'mdgrid'}];
   if(L.type==='cezm')return [{k:'czintro'},...CZ_EX.map(w=>({k:'czw',w})),{k:'czgrid'}];
   if(L.type==='forms')return ['ب','ج','س','ع','ه','ك','ل','د'].map(c=>({k:'forms',l:BYC[c]}));
   const h=L.h;
@@ -365,6 +395,34 @@ function cardHTML(c){
       <div class="forms" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px">${[[LA.c,'Tek'],[T+LA.c,'Sonda']].map(([g,a])=>`<div><span class="ar" lang="ar" style="font-size:64px">${g}</span><small>${a}</small></div>`).join('')}</div></div>`;
   if(c.k==='lasyl')return `<div class="tile"><p class="lead">Üstünlü Lam'dan sonra gelen Elif sesi uzatır.</p>
       <div class="sib">${[['ل'+HAREKE[0].m,'le','kısa'],['ل'+HAREKE[0].m+'ا','lâ','uzun']].map(([s,r,k])=>`<div><span class="ar" lang="ar">${s}</span><b>${r}</b><small>${k}</small><button class="speak" data-act="say" data-t="${s}" data-l="ar" aria-label="${r} dinle" style="margin-top:6px;min-height:44px;padding:4px 12px">${I.spk}</button></div>`).join('')}</div></div>`;
+  if(c.k==='tnintro')return `<div class="tile"><p class="cname" style="margin-top:6px">Tenvin</p>
+      <p class="lead">Harekeler ikişer yazılırsa harfi okurken sonuna “n” sesi ekleriz.</p>
+      <div class="sib">${TENVIN.map((t,h)=>`<div><span class="ar" lang="ar">${tnWord(BYC['ب'],h)}</span><b>${tnRead(BYC['ب'],h)}</b><small>${t.ad}</small></div>`).join('')}</div></div>`;
+  if(c.k==='tn'){const t=TENVIN[c.h];
+    return `<div class="tile"><p class="cname" style="margin-top:6px">${t.ad}</p>
+      <p class="flip-hint">${HAREKE[c.h].ad} gibi okunur, sonuna “n” eklenir.</p>
+      <div class="pairs">${['ب','ق'].map(ch=>{const L=BYC[ch],w=tnWord(L,c.h);return `<div class="sib pair"><div><span class="ar" lang="ar">${L.c+HAREKE[c.h].m}</span><b>${reading(L,c.h)}</b><small>tek</small></div><div><span class="ar" lang="ar">${w}</span><b>${tnRead(L,c.h)}</b><small>tenvin</small><button class="speak" data-act="say" data-t="${w}" data-l="ar" aria-label="${tnRead(L,c.h)} dinle" style="margin-top:6px;min-height:44px;padding:4px 12px">${I.spk}</button></div></div>`}).join('')}</div></div>`}
+  if(c.k==='tngrid')return `<div class="tile"><p class="lead">Hepsi bir arada! Dokun, dinle.</p>
+      <div class="syl" style="grid-template-columns:repeat(3,minmax(0,1fr))">${GRID9.map(ch=>[0,1,2].map(h=>{const L=BYC[ch],w=tnWord(L,h),r=tnRead(L,h);return `<button data-act="say" data-t="${w}" data-l="ar" aria-label="${r}"><span class="ar" lang="ar">${w}</span><small>${r}</small></button>`}).join('')).join('')}</div></div>`;
+  if(c.k==='sdintro')return `<div class="tile"><div class="intro-mark" lang="ar" dir="rtl">${T+T+SEDDE+T+T}</div>
+      <p class="cname">Şedde</p>
+      <p class="lead">Şedde harfin üstüne konur ve o harfi iki kere okutur:<br>önce önündeki harfle birlikte sessiz, sonra kendi harekesiyle.</p>
+      <div class="sib" style="margin-top:6px"><div><span class="ar" lang="ar">${sdWord('ا',0,'ب',0)}</span><b>${sdRead('ا',0,'ب',0)}</b><small>eb + be</small></div></div></div>`;
+  if(c.k==='sdw'){const w=sdWord(...c.w),[a,ha,b,hb]=c.w;
+    return `<div class="tile"><p class="glyph" lang="ar" style="font-size:clamp(96px,30vw,130px)">${w}</p><p class="read">${sdRead(...c.w)}</p>
+      <p class="flip-hint">${czRead(a,ha,b)} + ${reading(BYC[b],hb)}</p>
+      <button class="speak" data-act="say" data-t="${w}" data-l="ar">${I.spk} Dinle</button></div>`}
+  if(c.k==='sdgrid')return `<div class="tile"><p class="lead">Hepsi bir arada! Dokun, dinle.</p>
+      <div class="syl" style="grid-template-columns:repeat(2,minmax(0,1fr))">${SD_EX.map(x=>{const w=sdWord(...x),r=sdRead(...x);return `<button data-act="say" data-t="${w}" data-l="ar" aria-label="${r}"><span class="ar" lang="ar">${w}</span><small>${r}</small></button>`}).join('')}</div></div>`;
+  if(c.k==='mdintro')return `<div class="tile"><p class="cname" style="margin-top:6px">Med</p>
+      <p class="lead">Med, sesi uzatmak demek. Üstünden sonra Elif, esreden sonra Ye, ötreden sonra Vav gelirse sesi uzatırız.</p>
+      <div class="sib">${[0,1,2].map(h=>`<div><span class="ar" lang="ar">${mdWord(BYC['ب'],h)}</span><b>${mdRead(BYC['ب'],h)}</b><small>${HAREKE[h].ad} + ${BYC[MED[h]].n}</small></div>`).join('')}</div></div>`;
+  if(c.k==='md'){const H=HAREKE[c.h];
+    return `<div class="tile"><p class="cname" style="margin-top:6px">${H.ad} + ${BYC[MED[c.h]].n}</p>
+      <p class="flip-hint">Kısa okunanla uzun okunanı karşılaştır.</p>
+      <div class="pairs">${['ب','ق'].map(ch=>{const L=BYC[ch],w=mdWord(L,c.h);return `<div class="sib pair"><div><span class="ar" lang="ar">${L.c+H.m}</span><b>${reading(L,c.h)}</b><small>kısa</small></div><div><span class="ar" lang="ar">${w}</span><b>${mdRead(L,c.h)}</b><small>uzun</small><button class="speak" data-act="say" data-t="${w}" data-l="ar" aria-label="${mdRead(L,c.h)} dinle" style="margin-top:6px;min-height:44px;padding:4px 12px">${I.spk}</button></div></div>`}).join('')}</div></div>`}
+  if(c.k==='mdgrid')return `<div class="tile"><p class="lead">Hepsi bir arada! Dokun, dinle.</p>
+      <div class="syl" style="grid-template-columns:repeat(3,minmax(0,1fr))">${GRID9.map(ch=>[0,1,2].map(h=>{const L=BYC[ch],w=mdWord(L,h),r=mdRead(L,h);return `<button data-act="say" data-t="${w}" data-l="ar" aria-label="${r}"><span class="ar" lang="ar">${w}</span><small>${r}</small></button>`}).join('')).join('')}</div></div>`;
   if(c.k==='czintro')return `<div class="tile"><div class="intro-mark" lang="ar" dir="rtl">${T+T+CEZM+T+T}</div>
       <p class="cname">Cezm</p>
       <p class="lead">Cezm harfin üstüne konur ve harfi sessiz yapar.<br>Cezmli harf, önündeki harekeli harfle birlikte okunur.</p>
@@ -426,8 +484,27 @@ function qCz(a,h,b){const w=czWord(a,h,b),r=czRead(a,h,b);
   const cand=[reading(BYC[a],h)+reading(BYC[b],h),...[0,1,2].filter(x=>x!==h).map(x=>czRead(a,x,b)),...shuffle(CZ_SAKIN.filter(x=>x!==b)).map(x=>czRead(a,h,x))];
   const d=[];for(const x of cand){if(x!==r&&!d.includes(x))d.push(x);if(d.length===3)break}
   return {prompt:'Bu nasıl okunur?',show:`<p class="glyph" lang="ar">${w}</p>`,opts:shuffle([r,...d]).map(x=>({key:x,html:x,label:x})),ans:r,tell:r}}
+const uniq3=(r,cand)=>{const d=[];for(const x of cand){if(x!==r&&!d.includes(x))d.push(x);if(d.length===3)break}return d};
+const txtOpts=(r,d)=>shuffle([r,...d]).map(x=>({key:x,html:x,label:x}));
+function qTn(L,h){const w=tnWord(L,h),r=tnRead(L,h);
+  const d=uniq3(r,[reading(L,h),...shuffle([0,1,2].filter(x=>x!==h)).map(x=>tnRead(L,x)),...shuffle(TN_BASE).map(o=>tnRead(o,h))]);
+  return {prompt:'Bu nasıl okunur?',show:`<p class="glyph" lang="ar">${w}</p>`,opts:txtOpts(r,d),ans:r,tell:r}}
+function qSd(a,ha,b,hb){const w=sdWord(a,ha,b,hb),r=sdRead(a,ha,b,hb);
+  const d=uniq3(r,[reading(BYC[a],ha)+reading(BYC[b],hb),...shuffle([0,1,2].filter(x=>x!==hb)).map(x=>sdRead(a,ha,b,x)),...shuffle(CZ_SAKIN.filter(x=>x!==b)).map(x=>sdRead(a,ha,x,hb))]);
+  return {prompt:'Bu nasıl okunur?',show:`<p class="glyph" lang="ar" style="font-size:clamp(84px,26vw,112px)">${w}</p>`,opts:txtOpts(r,d),ans:r,tell:r}}
+function qMdRead(L,h){const w=mdWord(L,h),r=mdRead(L,h);
+  const d=uniq3(r,[reading(L,h),...shuffle([0,1,2].filter(x=>x!==h)).map(x=>mdRead(L,x)),...shuffle(MD_BASE).map(o=>mdRead(o,h))]);
+  return {prompt:'Bu nasıl okunur?',show:`<p class="glyph" lang="ar">${w}</p>`,opts:txtOpts(r,d),ans:r,tell:r}}
+function qMdFind(L,h){const r=mdRead(L,h),o=h=>({key:mdWord(L,h),html:`<span class="ar" lang="ar">${mdWord(L,h)}</span>`,label:mdRead(L,h)});
+  const opts=shuffle([o(h),{key:L.c+HAREKE[h].m,html:`<span class="ar" lang="ar">${L.c+HAREKE[h].m}</span>`,label:reading(L,h)},...[0,1,2].filter(x=>x!==h).map(o)]);
+  return {prompt:`Hangisi <b>${r}</b> diye okunur?`,show:`<p class="q-name">${r}</p>`,opts,ans:mdWord(L,h),tell:r}}
 function buildQuiz(L){
   let qs=[];
+  if(L.type==='tenvin')return pick(TN_BASE,8).map(l=>qTn(l,Math.random()*3|0));
+  if(L.type==='sedde'){const ex=pick(SD_EX,4).map(w=>qSd(...w));
+    const rnd=[];while(rnd.length<4){const a=pick(SD_ILK,1)[0],b=pick(CZ_SAKIN,1)[0];if(a!==b)rnd.push(qSd(a,Math.random()*3|0,b,Math.random()*3|0))}
+    return shuffle([...ex,...rnd])}
+  if(L.type==='med')return pick(MD_BASE,8).map((l,i)=>i%2?qMdFind(l,Math.random()*3|0):qMdRead(l,Math.random()*3|0));
   if(L.type==='lamelif'){const pool=[LA,BYC['ل'],BYC['ا'],BYC['ك'],BYC['ن']];
     return shuffle([qName(LA,pool),qName(LA,pool),qFind(LA,pool),qFind(LA,pool),qLaForm(),qLaForm(),qLaRead(true),qLaRead(false)])}
   if(L.type==='cezm'){const ex=pick(CZ_EX,4).map(w=>qCz(...w));

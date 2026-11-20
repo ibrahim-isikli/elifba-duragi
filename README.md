@@ -2,7 +2,7 @@
 
 Çocuklar için Kur'an okumaya hazırlık uygulaması (deneme sürümü). Telefona kurulabilir ve internetsiz çalışır.
 
-**Dersler:** Harfler (4 ders) · Lamelif · Noktalı kardeşler · Harflerin şekilleri · Üstün · Esre · Ötre · Cezm.
+**Dersler:** Harfler (4 ders) · Lamelif · Noktalı kardeşler · Harflerin şekilleri · Üstün · Esre · Ötre · Tenvin · Cezm · Şedde · Med.
 Her durakta önce kartlarla tanışılır, sonra kısa bir oyun oynanır; yıldız kazanılınca sonraki durak açılır.
 
 ## Deneme sürümü notları
